@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import {AuthReqDto} from "../../services/models/auth-req-dto";
 import {Router} from "@angular/router";
 import {AuthenticationService} from "../../services/services/authentication.service";
-import {TokenService} from "../../token/token.service";
+import {TokenService} from "../../services/token/token.service";
 
 @Component({
   selector: 'app-login',
@@ -32,11 +32,6 @@ export class LoginComponent {
         this.router.navigate(['books']);
       },
       error: (err) => {
-        if (err.headers) {
-          const headersList = err.headers.keys().map((k: string) => `${k}: ${err.headers?.get(k)}`);
-          console.log('Response Headers:', headersList);
-        }
-
         if (err.error.vldErrs) {
           this.errorMsg = err.error.vldErrs
         } else {
