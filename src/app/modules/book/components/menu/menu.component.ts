@@ -10,8 +10,9 @@ import { RouterModule } from '@angular/router';
 })
 export class MenuComponent implements OnInit {
 
-  async logout() {
-
+  logout() {
+    localStorage.removeItem('token');
+    window.location.reload();
   }
 
   ngOnInit(): void {

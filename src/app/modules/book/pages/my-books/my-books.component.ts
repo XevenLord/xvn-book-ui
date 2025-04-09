@@ -1,23 +1,21 @@
 import {Component, OnInit} from '@angular/core';
 import {PageDtoBookRsp} from "../../../../services/models/page-dto-book-rsp";
 import {BookService} from "../../../../services/services/book.service";
-import {Router} from "@angular/router";
+import {Router, RouterModule} from "@angular/router";
 import {BookRsp} from "../../../../services/models/book-rsp";
 import {CommonModule} from "@angular/common";
 import {BookCardComponent} from "../../components/book-card/book-card.component";
 
 @Component({
   selector: 'app-my-books',
-  imports: [CommonModule, BookCardComponent],
+  imports: [CommonModule, BookCardComponent, RouterModule],
   templateUrl: './my-books.component.html',
   styleUrl: './my-books.component.css'
 })
 export class MyBooksComponent implements OnInit {
-  bookRsp: PageDtoBookRsp = {};
+  bookRsp: PageDtoBookRsp = {content: []};
   page = 0;
   size = 4;
-  message: string = '';
-  level: string = 'success';
 
   constructor(
     private bookService: BookService,
@@ -30,12 +28,20 @@ export class MyBooksComponent implements OnInit {
   }
 
   private findAllBooks() {
-    this.bookService.findAllBooks({
+    this.bookService.findAllBooksByOwner({
       page: this.page,
       size: this.size
     }).subscribe({
       next: (books) => {
+        console.log("checking books response :: ", books);
         this.bookRsp = books;
+        if (!this.bookRsp.content) {
+          this.bookRsp.content = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching books:', err);
+        this.bookRsp.content = [];
       }
     });
 
@@ -70,20 +76,27 @@ export class MyBooksComponent implements OnInit {
     return this.page == this.bookRsp.totalPages as number - 1;
   }
 
-  borrowBook(book: BookRsp) {
-    this.message = ''
-    this.bookService.borrowBook({
+  archiveBook(book: BookRsp) {
+    this.bookService.updArchivedSts({
       'book-id': book.id as number
     }).subscribe({
       next: () => {
-        this.level = 'success';
-        this.message = 'Book successfully added to your list';
-      },
-      error: (err) => {
-        console.log(err);
-        this.level = 'error';
-        this.message = err.error.err;
+        book.archived = !book.archived;
       }
     })
+  }
+
+  shareBook(book: BookRsp) {
+    this.bookService.updShareableSts({
+      'book-id': book.id as number
+    }).subscribe({
+      next: () => {
+        book.shareable = !book.shareable;
+      }
+    })
+  }
+
+  editBook(book: BookRsp) {
+    this.router.navigate(['books', 'manage', book.id])
   }
 }
